@@ -22,7 +22,7 @@ class VideoAlignedDataset(BaseDataset):
 
         self.c_name = os.path.join(opt.dataroot, "cloth.jpg")
         self.e_name = os.path.join(opt.dataroot, "edge.jpg")
-        self.v_name = os.path.join(opt.dataroot, "video4.mp4")
+        self.v_name = os.path.join(opt.dataroot, "video.mp4")
 
         self.capture = cv2.VideoCapture(self.v_name)
         self.frames_count = int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -45,52 +45,7 @@ class VideoAlignedDataset(BaseDataset):
                 flow_ = self.flownet_wrapper.getFlow(self.frames[index-1],self.frames[index])
                 self.flows.append(flow_)
 
-    #     self.text = './test_pairs.txt'
-
-    #     dir_I = '_img'
-    #     self.dir_I = os.path.join(opt.dataroot, opt.phase + dir_I)
-
-    #     dir_C = '_clothes'
-    #     self.dir_C = os.path.join(opt.dataroot, opt.phase + dir_C)
-
-    #     dir_E = '_edge'
-    #     self.dir_E = os.path.join(opt.dataroot, opt.phase + dir_E)
-
-    #     self.im_name = []
-    #     self.c_name = []
-    #     self.e_name = []
-    #     self.get_file_name()
-    #     #import ipdb; ipdb.set_trace()
-    #     self.dataset_size = len(self.im_name)
-
-    # def get_file_name(self):
-
-    #     with open(self.text, 'r') as f:
-    #         for line in f.readlines():
-    #             im_name, c_name = line.strip().split()
-    #             self.im_name.append(os.path.join(self.dir_I, im_name))
-    #             self.c_name.append(os.path.join(self.dir_C, c_name))
-    #             self.e_name.append(os.path.join(self.dir_E, c_name))
-
     def __getitem__(self, index):        
-
-        #file_path ='demo.txt'
-        #im_name, c_name = linecache.getline(file_path, index+1).strip().split()
-        
-        # ret, frame = self.capture.read()
-        # if self.capture.isOpened():
-        #     ret, frame = self.capture.read()
-        #     if not ret:
-        #         self.capture.release()
-        #         return {}
-            
-
-        # I_path = os.path.join(self.im_name[index])
-        # I = Image.open(I_path).convert('RGB')
-        # I = Image.fromarray(self.frames[index]).convert('RGB')
-
-        # self.frames[index] = cv2.cvtColor(self.frames[index], cv2.COLOR_BGR2RGB)
-        # I = Image.fromarray(self.frames[index])
         I = self.frames[index]
 
         if index > 0:

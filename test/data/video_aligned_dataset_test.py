@@ -96,7 +96,7 @@ class VideoAlignedDataset(BaseDataset):
         if index > 0:
             flow_tensor = torch.from_numpy(self.flows[index-1]).permute(2, 0, 1)
             flow_tensor = self.flow_norm(flow_tensor)
-            print("flow tensor shape: ",flow_tensor.size())
+            # print("flow tensor shape: ",flow_tensor.size())
 
         params = get_params(self.opt, I.size)
         # print(params)

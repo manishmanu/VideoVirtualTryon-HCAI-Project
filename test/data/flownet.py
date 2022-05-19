@@ -9,7 +9,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 #from flownet2_pytorch.utils.flow_utils import visulize_flow_file
 
-sys.path.insert(0, '/home.ORIG/npochhi/manish/ShineOn-Virtual-Tryon/models')
+sys.path.insert(0, '../')
 
 class FlowNet(nn.Module):
 
@@ -23,7 +23,7 @@ class FlowNet(nn.Module):
 
         self.flowNet = flownet2_tools.module_to_dict(flownet2_models)['FlowNet2']().cuda() #self.gpu_ids[0])
         print(type(self.flowNet))
-        checkpoint = torch.load('/home.ORIG/npochhi/manish/ShineOn-Virtual-Tryon/models/flownet2_pytorch/FlowNet2_checkpoint.pth.tar')
+        checkpoint = torch.load('../ckp/FlowNet2_checkpoint.pth.tar')
         self.flowNet.load_state_dict(checkpoint['state_dict'])
         self.flowNet.eval()
         self.resample = Resample2d()
@@ -64,49 +64,5 @@ class FlowNet(nn.Module):
     def norm(self, t):
         return torch.sum(t * t, dim=1, keepdim=True)
 
-# f = FlowNet()
-# to_tensor_and_norm_rgb = transforms.Compose(
-#             [
-#                 transforms.ToTensor(),
-#                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-#             ]
-#         )
-# im1 = '/home.ORIG/npochhi/manish/Flow-Style-VTON/video_test/test_img/frame_0.jpg'
-# im2 = '/home.ORIG/npochhi/manish/Flow-Style-VTON/video_test/test_img/frame_1.jpg'
-# assert os.path.exists(im1)
-# assert os.path.exists(im2)
-# im1 = Image.open(im1)
-# im2 = Image.open(im2)
-# im1 = to_tensor_and_norm_rgb(im1).unsqueeze(0).cuda()
-# im2 = to_tensor_and_norm_rgb(im2).unsqueeze(0).cuda()
-# flow_, conf_ = f(im1, im2)
-# print(flow_.size())
-# print(conf_.size())
-# # flow_ = flow_.view(608, 342, 2).cpu().numpy().astype(np.float32)
-# # conf_ = conf_.view(608, 342, 1).cpu().numpy().astype(np.float32)
-# # print(flow_.dtype)
-# # plt.imsave(flow_[:,:,0], "output_flow1.jpg")
-# # plt.imsave(flow_[:,:,1], "output_flow2.jpg")
-# # plt.imsave(conf_, "output_conf.jpg")
-# torchvision.utils.save_image(flow_[0], "output_flow.png")
-# torchvision.utils.save_image(conf_, "output_conf.png")
-
-
-
-
-# # save flow, I reference the code in scripts/run-flownet.py in flownet2-caffe project
-# def writeFlow(name, flow):
-#     f = open(name, 'wb')
-#     f.write('PIEH'.encode('utf-8'))
-#     np.array([flow.shape[1], flow.shape[0]], dtype=np.int32).tofile(f)
-#     flow = flow.astype(np.float32)
-#     flow.tofile(f)
-#     f.flush()
-#     f.close()
-
-
-# im1 = flow_.squeeze().data.cpu().numpy().transpose(1, 2, 0)
-# #im2 = conf_.squeeze().data.cpu().numpy().transpose(1, 2, 0)
-# writeFlow("im1.flo", im1)
-# # visulize_flow_file("im1.flo", "./")
-# #writeFlow("im2.flo", im2)
+    def sample(self, im, flow):
+        return self.resample(im, flow)

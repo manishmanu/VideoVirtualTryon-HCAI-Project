@@ -1,5 +1,3 @@
-import torch
-
 from data.flownet import FlowNet
 from torchvision import transforms
 
@@ -19,3 +17,6 @@ class FlowNetWrapper:
         im2 = self.to_tensor_and_norm_rgb(im2).unsqueeze(0).cuda()
         flow_, conf_ = self.flownet(im1, im2)
         return flow_.squeeze().data.cpu().numpy().transpose(1, 2, 0)
+
+    def getSample(self, im, flow):
+        return self.flownet.sample(im,flow)

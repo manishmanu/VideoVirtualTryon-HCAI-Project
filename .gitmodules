@@ -1,0 +1,3 @@
+[submodule "flownet2_pytorch"]
+	path = flownet2_pytorch
+	url = https://github.com/andrewjong/flownet2-pytorch-1.0.1-with-CUDA-10.git

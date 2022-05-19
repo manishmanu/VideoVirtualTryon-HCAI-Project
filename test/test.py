@@ -8,10 +8,17 @@ import os
 import numpy as np
 import torch
 import cv2
+import sys
 import torch.nn.functional as F
 from torchvision import utils
 import torchvision.transforms as T
 from util import flow_util
+from pathlib import Path
+from data.flownet_wrapper import FlowNetWrapper
+
+Path("../results").mkdir(parents=True, exist_ok=True)
+Path("../results/our_t_results").mkdir(parents=True, exist_ok=True)
+Path("../results/im_gar_flow_wg").mkdir(parents=True, exist_ok=True)
 
 opt = TestOptions().parse()
 
@@ -68,11 +75,12 @@ total_steps = (start_epoch-1) * dataset_size + epoch_iter
 step = 0
 step_per_batch = dataset_size / opt.batchSize
 
+flownet_wrapper = FlowNetWrapper()
 
 for epoch in range(1,2):
 
     out_frames = []
-
+    p_tryon_tmp = None
     for i, data in enumerate(dataset, start=epoch_iter):
         iter_start_time = time.time()
         total_steps += opt.batchSize
@@ -84,8 +92,10 @@ for epoch in range(1,2):
         edge = data['edge']
         edge = torch.FloatTensor((edge.detach().numpy() > 0.5).astype(np.int))
         clothes = clothes * edge        
-
-        #import ipdb; ipdb.set_trace()
+        if step > 0:
+            flow = data['flow']
+            warped_by_flow = flownet_wrapper.getSample(p_tryon_tmp,flow.cuda())
+            # print("warped_by_flow generated")
 
         flow_out = warp_model(real_image.cuda(), clothes.cuda())
         warped_cloth, last_flow, = flow_out
@@ -99,6 +109,7 @@ for epoch in range(1,2):
         m_composite = torch.sigmoid(m_composite)
         m_composite = m_composite * warped_edge
         p_tryon = warped_cloth * m_composite + p_rendered * (1 - m_composite)
+        p_tryon_tmp = p_tryon.clone().detach()
 
         path = 'results/' + opt.name
         os.makedirs(path, exist_ok=True)
@@ -106,16 +117,39 @@ for epoch in range(1,2):
         #os.makedirs(sub_path,exist_ok=True)
         print(data['p_name'])
 
+        if step == 1:
+            utils.save_image(
+                p_rendered,
+                os.path.join('../results/', 'p_rendered.jpg'),
+                nrow=int(1),
+                normalize=True,
+                range=(-1,1),
+            )
+            utils.save_image(
+                p_tryon,
+                os.path.join('../results/', 'p_tryon.jpg'),
+                nrow=int(1),
+                normalize=True,
+                range=(-1,1),
+            )
+            utils.save_image(
+                warped_by_flow,
+                os.path.join('../results/', 'warped_flow.jpg'),
+                nrow=int(1),
+                normalize=True,
+                range=(-1,1),
+            )
+
         if step % 1 == 0:
 
             ## write into video
-            out_frames.append(os.path.join('./our_t_results', data['p_name'][0]))
+            out_frames.append(os.path.join('../results/our_t_results', data['p_name'][0]))
             
             ## save try-on image only
 
             utils.save_image(
                 p_tryon,
-                os.path.join('./our_t_results', data['p_name'][0]),
+                os.path.join('../results/our_t_results', data['p_name'][0]),
                 nrow=int(1),
                 normalize=True,
                 range=(-1,1),
@@ -132,7 +166,7 @@ for epoch in range(1,2):
             combine = torch.cat([a[0],b[0], flow_color, c[0], d[0]], 2).squeeze()
             utils.save_image(
                 combine,
-                os.path.join('./im_gar_flow_wg', data['p_name'][0]),
+                os.path.join('../results/im_gar_flow_wg', data['p_name'][0]),
                 nrow=int(1),
                 normalize=True,
                 range=(-1,1),
@@ -143,7 +177,7 @@ for epoch in range(1,2):
         if epoch_iter >= dataset_size:
             break
 
-    out_video = cv2.VideoWriter('result4_aug.avi',fourcc=cv2.VideoWriter_fourcc(*'DIVX'), fps=30, frameSize=(192,256))
+    out_video = cv2.VideoWriter('../results/result_aug.avi',fourcc=cv2.VideoWriter_fourcc(*'DIVX'), fps=30, frameSize=(192,256))
     for frame in out_frames:
         out_video.write(cv2.imread(frame))
 

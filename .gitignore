@@ -1,5 +1,7 @@
 ckp/
 video_test/
 VITON_test/
-test/im_gar_flow_wg/
-test/our_t_results/
+results/
+test/data/__pycache__/
+test/models/__pycache__/
+test/util/__pycache__/

@@ -42,7 +42,7 @@ class VideoAlignedDataset(BaseDataset):
             self.frames[index] = cv2.cvtColor(self.frames[index], cv2.COLOR_BGR2RGB)
             self.frames[index] = Image.fromarray(self.frames[index])
             if index > 0:
-                flow_ = self.flownet_wrapper.getFlow(self.frames[index-1],self.frames[index])
+                flow_ = self.flownet_wrapper.getFlow(self.frames[index],self.frames[index-1])
                 self.flows.append(flow_)
 
     def __getitem__(self, index):        

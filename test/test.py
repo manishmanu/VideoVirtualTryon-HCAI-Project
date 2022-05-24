@@ -95,6 +95,7 @@ for epoch in range(1,2):
         if step > 0:
             flow = data['flow']
             warped_by_flow = flownet_wrapper.getSample(p_tryon_tmp,flow.cuda())
+
             # print("warped_by_flow generated")
 
         flow_out = warp_model(real_image.cuda(), clothes.cuda())
@@ -108,8 +109,12 @@ for epoch in range(1,2):
         p_rendered = torch.tanh(p_rendered)
         m_composite = torch.sigmoid(m_composite)
         m_composite = m_composite * warped_edge
-        p_tryon = warped_cloth * m_composite + p_rendered * (1 - m_composite)
-        p_tryon_tmp = p_tryon.clone().detach()
+        p_tryon_rendered = warped_cloth * m_composite + p_rendered * (1 - m_composite)
+        if step == 0 or not opt.enable_flow:
+            p_tryon = p_tryon_rendered
+        else:
+            p_tryon = warped_cloth * m_composite + warped_by_flow * (1 - m_composite)
+        p_tryon_tmp = p_tryon_rendered.clone().detach()
 
         path = 'results/' + opt.name
         os.makedirs(path, exist_ok=True)
@@ -117,7 +122,7 @@ for epoch in range(1,2):
         #os.makedirs(sub_path,exist_ok=True)
         print(data['p_name'])
 
-        if step == 1:
+        if step == 100:
             utils.save_image(
                 p_rendered,
                 os.path.join('../results/', 'p_rendered.jpg'),
@@ -177,7 +182,12 @@ for epoch in range(1,2):
         if epoch_iter >= dataset_size:
             break
 
-    out_video = cv2.VideoWriter('../results/result_aug.avi',fourcc=cv2.VideoWriter_fourcc(*'DIVX'), fps=30, frameSize=(192,256))
+    out_video_filename = ""
+    if opt.enable_flow:
+        out_video_filename = "../results/result_with_flow.avi"
+    else:
+        out_video_filename = "../results/result_without_flow.avi"
+    out_video = cv2.VideoWriter(out_video_filename,fourcc=cv2.VideoWriter_fourcc(*'DIVX'), fps=30, frameSize=(192,256))
     for frame in out_frames:
         out_video.write(cv2.imread(frame))
 

@@ -18,8 +18,10 @@ Note: FlowStyle checkpoints should have both `aug` and `non_aug` versions. You c
 ```bash
 python test.py --name demo --resize_or_crop None --batchSize 1 --gpu_ids 1 --warp_checkpoint ../ckp/aug/PFAFN_warp_epoch_101.pth --gen_checkpoint ../ckp/aug/PFAFN_gen_epoch_101.pth --dataroot video_test
 ```
+Note: \
+Add `--enable_flow` to the arguments to enable optical flow while video generation. \
+`video_test` folder should have a cloth, edge mask of cloth and a video of size 192 x 256.
 
-Add `--enable_flow` to the arguments to enable optical flow while video generation.
 
 ### Result
 Check the results in `results` folder, that gets created at the root of the project. `result_with_flow.avi` will be generated if flow is enabled and `result_without_flow.avi` will be generated if flow is not enabled.
